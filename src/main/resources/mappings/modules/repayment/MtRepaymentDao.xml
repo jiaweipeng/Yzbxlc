@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.repayment.dao.MtRepaymentDao">
+    
+	<sql id="mtRepaymentColumns">
+		a.id AS "id",
+		a.grade AS "grade",
+		a.numperiods AS "numperiods",
+		a.duedate AS "duedate",
+		a.yetcapital AS "yetcapital",
+		a.yetinterest AS "yetinterest",
+		a.withanakin AS "withanakin",
+		a.penalty AS penalty,
+		a.latefee AS latefee,
+		a.overduedays AS "overduedays",
+		a.state AS "state",
+		a.userid AS "userid",
+		a.overdue AS "overdue",
+		a.overduedate AS overduedate,
+		a.actual_duedate AS "actualDuedate",
+		a.product_id AS "productId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.iswarn AS "iswarn",
+		a.del_flag AS "delFlag",
+		a.actualAnakin AS "actualAnakin",
+		a.actualLatefee AS "actualLatefee",
+		a.actualPayTime AS "actualPayTime"
+	</sql>
+	
+	<sql id="mtRepaymentJoins">
+	</sql>
+    
+	<select id="get" resultType="MtRepayment">
+		SELECT 
+			<include refid="mtRepaymentColumns"/>
+		FROM mt_repayment a
+		<include refid="mtRepaymentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="sumUserWzhr" resultType="String">
+		SELECT 
+			COALESCE(sum(a.yetcapital),0)+COALESCE(sum(a.yetinterest),0)+COALESCE(sum(a.withanakin),0)+COALESCE(sum(a.penalty),0)+COALESCE(sum(a.latefee),0) as trdAmt
+		FROM mt_repayment a 
+		<include refid="mtRepaymentJoins"/>
+		<where>
+			a.del_flag = 0
+			AND a.state != 1
+			<if test="starttime !=null and aborttime !=null">
+				<if test="starttime !='' and aborttime !=''">
+					AND a.duedate &gt;= #{starttime}
+					AND a.duedate &lt;= #{aborttime}
+				</if>
+			</if>
+			AND a.userid = #{userid}
+		</where>
+	</select>
+	
+	<select id="sumUserRepay" resultType="String">
+		SELECT 
+			<if test="type==1">
+				sum(a.yetcapital) as trdAmt
+			</if>
+			<if test="type==2">
+				sum(a.yetinterest) as trdAmt
+			</if>
+			<if test="type==3">
+				sum(a.withanakin) as trdAmt
+			</if>
+			<if test="type==4">
+				sum(a.penalty) as trdAmt
+			</if>
+			<if test="type==5">
+				sum(a.latefee) as trdAmt
+			</if>
+		FROM mt_repayment a 
+		<include refid="mtRepaymentJoins"/>
+		<where>
+			a.del_flag = 0
+			AND a.state = 1
+			<!-- AND a.update_date like #{time} -->
+			<if test="type==1 || type==2 || type==4">
+				<if test="starttime !=null and aborttime !=null">
+					<if test="starttime !='' and aborttime !=''">
+						AND a.actual_duedate &gt;= #{starttime}
+						AND a.actual_duedate &lt;= #{aborttime}
+					</if>
+				</if>
+			</if>
+			<if test="type==3 || type==5">
+				<if test="starttime !=null and aborttime !=null">
+					<if test="starttime !='' and aborttime !=''">
+						AND a.actualPayTime &gt;= #{starttime}
+						AND a.actualPayTime &lt;= #{aborttime}
+					</if>
+				</if>
+			</if>
+			AND a.userid = #{userid}
+		</where>
+	</select>
+	
+	<select id="findPidList" resultType="MtRepayment">
+		SELECT 
+			<include refid="mtRepaymentColumns"/>
+		FROM mt_repayment a
+		<include refid="mtRepaymentJoins"/>
+		<where>
+			a.del_flag = 0
+			AND a.grade = #{grade}
+		</where>
+		ORDER BY a.numperiods
+	</select>
+	
+	<select id="findList" resultType="MtRepayment">
+		SELECT 
+			<include refid="mtRepaymentColumns"/>
+		FROM mt_repayment a, mt_user u, mt_product p
+		<include refid="mtRepaymentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userNickName != null and userNickName != ''">
+				AND u.user_nick_name = #{userNickName}
+			</if>
+			<if test="userRealName != null and userRealName != ''">
+				AND u.user_real_name = #{userRealName}
+			</if>
+			<if test="title != null and title != ''">
+				AND p.title = #{title}
+			</if>
+			<if test="overdue != null and overdue != ''">
+				AND a.overdue = #{overdue}
+			</if>
+			<if test="state != null and state != '' or state==0">
+				AND a.state = #{state}
+			</if>
+			ANd a.userid = u.id
+			AND a.grade = p.pid
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByOut" resultType="MtRepayment">
+		SELECT 
+			<include refid="mtRepaymentColumns"/>
+		FROM mt_repayment a, mt_user u, mt_product p
+		<include refid="mtRepaymentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userNickName != null and userNickName != ''">
+				AND u.user_nick_name = #{userNickName}
+			</if>
+			<if test="userRealName != null and userRealName != ''">
+				AND u.user_real_name = #{userRealName}
+			</if>
+			<if test="title != null and title != ''">
+				AND p.title = #{title}
+			</if>
+			AND a.userid = u.id
+			AND a.grade = p.pid
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtRepayment">
+		SELECT 
+			<include refid="mtRepaymentColumns"/>
+		FROM mt_repayment a
+		<include refid="mtRepaymentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_repayment(
+			grade,
+			numperiods,
+			duedate,
+			yetcapital,
+			yetinterest,
+			withanakin,
+			penalty,
+			latefee,
+			overduedays,
+			state,
+			userid,
+			overdue,
+			overduedate,
+			actual_duedate,
+			product_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			iswarn,
+			del_flag,
+			actualAnakin,
+			actualLatefee,
+			actualPayTime
+		) VALUES (
+			#{grade},
+			#{numperiods},
+			#{duedate},
+			#{yetcapital},
+			#{yetinterest},
+			#{withanakin},
+			#{penalty},
+			#{latefee},
+			#{overduedays},
+			#{state},
+			#{userid},
+			#{overdue},
+			#{overduedate},
+			#{actualDuedate},
+			#{productId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{iswarn},
+			#{delFlag},
+			#{actualAnakin},
+			#{actualLatefee},
+			#{actualPayTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_repayment SET 	
+			grade = #{grade},
+			numperiods = #{numperiods},
+			duedate = #{duedate},
+			yetcapital = #{yetcapital},
+			yetinterest = #{yetinterest},
+			withanakin = #{withanakin},
+			penalty = #{penalty},
+			latefee = #{latefee},
+			overduedays = #{overduedays},
+			state = #{state},
+			userid = #{userid},
+			overdue = #{overdue},
+			overduedate = #{overduedate},
+			actual_duedate = #{actualDuedate},
+			product_id = #{productId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			iswarn = #{iswarn},
+			remarks = #{remarks},
+			actualAnakin = #{actualAnakin},
+			actualLatefee = #{actualLatefee},
+			actualPayTime = #{actualPayTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_repayment SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

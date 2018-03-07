@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.stat.dao.MtStatDao">
+    
+	<sql id="mtStatColumns">
+		a.id AS "id",
+		a.cookieid AS "cookieid",
+		a.ua AS "ua",
+		a.remoteip AS "remoteip",
+		a.refurl AS "refurl",
+		a.url AS "url",
+		a.screenx AS "screenx",
+		a.screeny AS "screeny",
+		a.os AS "os",
+		a.brower AS "brower",
+		a.title AS "title",
+		a.createdate AS "createdate"
+	</sql>
+	
+	<sql id="mtStatJoins">
+	</sql>
+    
+	<select id="get" resultType="MtStat">
+		SELECT 
+			<include refid="mtStatColumns"/>
+		FROM mt_stat a
+		<include refid="mtStatJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getpv" parameterType="String" resultType="Integer">
+		SELECT  count(*) FROM mt_stat where  DATE_FORMAT(createdate,'%Y-%m-%d')  >=  #{0}  and     #{1} >= DATE_FORMAT(createdate,'%Y-%m-%d');
+	</select>
+	<select id="getuv" parameterType="String" resultType="Integer">
+			SELECT count(distinct(cookieId))   FROM jeesite.mt_stat where DATE_FORMAT(createdate,'%Y-%m-%d')  >=  #{0}  and  #{1} >= DATE_FORMAT(createdate,'%Y-%m-%d');	
+	</select>
+
+	<select id="getDetail" parameterType="String" resultType="MtStatDetail">
+			SELECT count(1) as pv, count(distinct(cookieId)) as uv ,DATE_FORMAT(createdate,'%H') as hour FROM jeesite.mt_stat where DATE_FORMAT(createdate,'%Y-%m-%d')  >=  #{0}  and  #{1} >= DATE_FORMAT(createdate,'%Y-%m-%d') group by hour;
+	</select>
+	<select id="getTitleDetail" parameterType="String" resultType="MtStatDetail">
+			select count(1) as titlepv,title,url from jeesite.mt_stat where  DATE_FORMAT(createdate,'%Y-%m-%d')  >=  #{0}  and  #{1} >= DATE_FORMAT(createdate,'%Y-%m-%d')  group by title order by titlepv desc;
+	</select>
+
+
+
+	
+	<select id="findList" resultType="MtStat">
+		SELECT 
+			<include refid="mtStatColumns"/>
+		FROM mt_stat a
+		<include refid="mtStatJoins"/>
+		<where>
+			
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtStat">
+		SELECT 
+			<include refid="mtStatColumns"/>
+		FROM mt_stat a
+		<include refid="mtStatJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_stat(
+			id,
+			cookieid,
+			ua,
+			remoteip,
+			refurl,
+			url,
+			screenx,
+			screeny,
+			os,
+			brower,
+			title,
+			createdate
+		) VALUES (
+			#{id},
+			#{cookieid},
+			#{ua},
+			#{remoteip},
+			#{refurl},
+			#{url},
+			#{screenx},
+			#{screeny},
+			#{os},
+			#{brower},
+			#{title},
+			#{createdate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_stat SET 	
+			cookieid = #{cookieid},
+			ua = #{ua},
+			remoteip = #{remoteip},
+			refurl = #{refurl},
+			url = #{url},
+			screenx = #{screenx},
+			screeny = #{screeny},
+			os = #{os},
+			brower = #{brower},
+			title = #{title},
+			createdate = #{createdate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM mt_stat
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

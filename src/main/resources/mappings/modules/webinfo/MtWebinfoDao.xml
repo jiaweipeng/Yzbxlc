@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.webinfo.dao.MtWebinfoDao">
+    
+	<sql id="mtWebinfoColumns">
+		a.id AS "id",
+		a.pname AS "pname",
+		a.pvalues AS "pvalues",
+		a.logo AS "logo",
+		a.varname AS "varname",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="mtWebinfoJoins">
+	</sql>
+    
+	<select id="get" resultType="MtWebinfo">
+		SELECT 
+			<include refid="mtWebinfoColumns"/>
+		FROM mt_webinfo a
+		<include refid="mtWebinfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findVarname" resultType="MtWebinfo">
+		SELECT 
+			<include refid="mtWebinfoColumns"/>
+		FROM mt_webinfo a
+		<include refid="mtWebinfoJoins"/>
+		WHERE a.varname = #{0}
+	</select>
+	
+	<select id="findList" resultType="MtWebinfo">
+		SELECT 
+			<include refid="mtWebinfoColumns"/>
+		FROM mt_webinfo a
+		<include refid="mtWebinfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pname != null and pname != ''">
+				AND a.pname = #{pname}
+			</if>
+			<if test="pvalues != null and pvalues != ''">
+				AND a.pvalues = #{pvalues}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtWebinfo">
+		SELECT 
+			<include refid="mtWebinfoColumns"/>
+		FROM mt_webinfo a
+		<include refid="mtWebinfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_webinfo(
+			pname,
+			pvalues,
+			logo,
+			varname,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			type
+		) VALUES (
+			#{pname},
+			#{pvalues},
+			#{logo},
+			#{varname},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_webinfo SET 	
+			pname = #{pname},
+			pvalues = #{pvalues},
+			logo = #{logo},
+			varname = #{varname},
+			create_by = #{createBy.id},
+			create_date = #{createDate},
+			remarks = #{remarks},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_webinfo SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

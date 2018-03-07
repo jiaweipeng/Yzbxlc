@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mtusermony.dao.MtUsermonyDao">
+    
+	<sql id="mtUsermonyColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.recharge AS "recharge",
+		a.wals AS "wals",
+		a.dsfunds AS "dsfunds",
+		a.dlfunds AS "dlfunds",
+		a.lnmony AS "lnmony",
+		a.prinmony AS "prinmony",
+		a.settmony AS "settmony",
+		a.pumony AS "pumony",
+		a.remony AS "remony",
+		a.alsmony AS "alsmony",
+		a.eamony AS "eamony",
+		a.penmony AS "penmony",
+		a.damamony AS "damamony",
+		a.feemony AS "feemony",
+		a.reward AS "reward",
+		a.other AS "other",
+		a.date AS "date",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="mtUsermonyJoins">
+	</sql>
+    
+	<select id="get" resultType="MtUsermony">
+		SELECT 
+			<include refid="mtUsermonyColumns"/>
+		FROM mt_usermony a
+		<include refid="mtUsermonyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 查询充值总金额 -->
+	
+	
+	<select id="findList" resultType="MtUsermony">
+		SELECT 
+			<include refid="mtUsermonyColumns"/>
+		FROM mt_usermony a
+		<include refid="mtUsermonyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtUsermony">
+		SELECT 
+			<include refid="mtUsermonyColumns"/>
+		FROM mt_usermony a
+		<include refid="mtUsermonyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_usermony(
+			id,
+			name,
+			recharge,
+			wals,
+			dsfunds,
+			dlfunds,
+			lnmony,
+			prinmony,
+			settmony,
+			pumony,
+			remony,
+			alsmony,
+			eamony,
+			penmony,
+			damamony,
+			feemony,
+			reward,
+			other,
+			date,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{recharge},
+			#{wals},
+			#{dsfunds},
+			#{dlfunds},
+			#{lnmony},
+			#{prinmony},
+			#{settmony},
+			#{pumony},
+			#{remony},
+			#{alsmony},
+			#{eamony},
+			#{penmony},
+			#{damamony},
+			#{feemony},
+			#{reward},
+			#{other},
+			#{date},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_usermony SET 	
+			name = #{name},
+			recharge = #{recharge},
+			wals = #{wals},
+			dsfunds = #{dsfunds},
+			dlfunds = #{dlfunds},
+			lnmony = #{lnmony},
+			prinmony = #{prinmony},
+			settmony = #{settmony},
+			pumony = #{pumony},
+			remony = #{remony},
+			alsmony = #{alsmony},
+			eamony = #{eamony},
+			penmony = #{penmony},
+			damamony = #{damamony},
+			feemony = #{feemony},
+			reward = #{reward},
+			other = #{other},
+			date = #{date},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_usermony SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

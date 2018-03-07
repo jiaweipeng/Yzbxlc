@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mtrecharge.dao.MtRechargeDao">
+    
+	<sql id="mtRechargeColumns">
+		a.id AS "id",
+		a.merbillno AS "merbillno",
+		a.deposittype AS "deposittype",
+		a.channeltype AS "channeltype",
+		a.bankcode AS "bankcode",
+		a.ipsbillno AS "ipsbillno",
+		a.ipsdotime AS "ipsdotime",
+		a.ipstrdamt AS "ipstrdamt",
+		a.ipsfee AS "ipsfee",
+		a.merfee AS "merfee",
+		a.trdstatus AS "trdstatus",
+		a.mt_user_id AS "mtUserId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="mtRechargeJoins">
+	</sql>
+    	
+    <select id="getTotalipsTrdAmt" resultType="java.lang.String">	
+    	 select sum(ipstrdamt) as  ipstrdamt  from  mt_recharge where mt_user_id=#{mtuserid} 
+    </select>
+    
+	<select id="get" resultType="MtRecharge">
+		SELECT 
+			<include refid="mtRechargeColumns"/>
+		FROM mt_recharge a
+		<include refid="mtRechargeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="sumUserRecharge" resultType="String">
+		SELECT 
+			sum(a.ipsTrdAmt)+sum(a.ipsFee)+sum(a.merFee) as trdAmt
+		FROM mt_recharge a 
+		<include refid="mtRechargeJoins"/>
+		<where>
+			a.del_flag = 0
+			AND a.trdstatus = 1
+			<if test="starttime !=null and aborttime !=null">
+				<if test="starttime !='' and aborttime !=''">
+					AND a.ipsDoTime &gt;= #{starttime}
+					AND a.ipsDoTime &lt;= #{aborttime}
+				</if>
+			</if>
+			AND a.mt_user_id = #{userid}
+		</where>
+	</select>
+	
+	<select id="findList" resultType="MtRecharge">
+		SELECT 
+			<include refid="mtRechargeColumns"/>
+		FROM mt_recharge a
+		<include refid="mtRechargeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			
+			<if test="beginTime !=null and beginTime !=''">
+               	 	AND  DATE_FORMAT(a.ipsdotime,'%Y-%m-%d')<![CDATA[ >=DATE_FORMAT(#{beginTime},'%Y-%m-%d')]]>
+              </if>
+            <if test="endTime !=null and endTime !=''">
+                	 AND   DATE_FORMAT(a.ipsdotime,'%Y-%m-%d')<![CDATA[ <= DATE_FORMAT(#{endTime},'%Y-%m-%d') ]]>
+             </if>
+          		
+			<if test="mtUserId != null and mtUserId != ''">
+				AND a.mt_user_id = #{mtUserId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtRecharge">
+		SELECT 
+			<include refid="mtRechargeColumns"/>
+		FROM mt_recharge a inner join mt_user as u on a.mt_user_id=u.id
+		<include refid="mtRechargeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_recharge(
+			merbillno,
+			deposittype,
+			channeltype,
+			bankcode,
+			ipsbillno,
+			ipsdotime,
+			ipstrdamt,
+			ipsfee,
+			merfee,
+			trdstatus,
+			mt_user_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{merbillno},
+			#{deposittype},
+			#{channeltype},
+			#{bankcode},
+			#{ipsbillno},
+			#{ipsdotime},
+			#{ipstrdamt},
+			#{ipsfee},
+			#{merfee},
+			#{trdstatus},
+			#{mtUserId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_recharge SET 	
+			merbillno = #{merbillno},
+			deposittype = #{deposittype},
+			channeltype = #{channeltype},
+			bankcode = #{bankcode},
+			ipsbillno = #{ipsbillno},
+			ipsdotime = #{ipsdotime},
+			ipstrdamt = #{ipstrdamt},
+			ipsfee = #{ipsfee},
+			merfee = #{merfee},
+			trdstatus = #{trdstatus},
+			mt_user_id = #{mtUserId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_recharge SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

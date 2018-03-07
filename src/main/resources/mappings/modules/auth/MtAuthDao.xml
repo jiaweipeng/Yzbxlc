@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.auth.dao.MtAuthDao">
+    
+	<sql id="mtAuthColumns">
+		a.id AS "id",
+		a.user_id AS "userid",
+		a.name AS "name",
+		a.idcard AS "idcard",
+		a.picture AS "picture",
+		a.phone AS "phone",
+		a.email AS "email",
+		a.video_file AS "videoFile",
+		a.deposit_bank AS "depositBank",
+		a.branch_bank_name AS "branchBankName",
+		a.bank_card AS "bankCard",
+		a.auth_state AS "authState",
+		a.auth_type AS "authType",
+		a.starttime AS "starttime",
+		a.updatetime AS "updatetime",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="mtAuthJoins">
+	</sql>
+    
+	<select id="get" resultType="MtAuth">
+		SELECT 
+			<include refid="mtAuthColumns"/>
+		FROM mt_auth a
+		<include refid="mtAuthJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MtAuth">
+		SELECT 
+			<include refid="mtAuthColumns"/>
+		FROM mt_auth a, mt_user u
+		<include refid="mtAuthJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.user_id = u.id
+		
+			<if test="userid != null and userid != ''">
+				AND a.userid = #{userid}
+			</if>
+			
+			<if test="authState != null and authState != ''">
+				AND a.auth_state = #{authState}
+			</if>
+			
+			
+			<!-- 认证用户名   查询-->
+			<if test="userNickName != null and userNickName != ''">
+				
+				AND u.user_nick_name LIKE
+				
+				<if test="dbName == 'mysql'">concat('%',#{userNickName},'%')</if>
+			</if>
+			
+			
+			
+			
+			<!-- 真实姓名模糊查询 -->
+			<if test="name != null and name != ''">
+				AND a.name LIKE	 
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			
+			
+			
+			<if test="phone != null and phone != ''">
+				AND a.phone LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{phone},'%')</if>
+			</if>
+			<!-- 获取数据库数据 -->
+			<if test="authType != null and authType != ''">
+				AND a.auth_type = #{authType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtAuth">
+		SELECT 
+			<include refid="mtAuthColumns"/>
+		FROM mt_auth a
+		<include refid="mtAuthJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_auth(
+			user_id,
+			name,
+			idcard,
+			picture,
+			phone,
+			email,
+			video_file,
+			deposit_bank,
+			branch_bank_name,
+			bank_card,
+			auth_state,
+			auth_type,
+			starttime,
+			updatetime,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{userid},
+			#{name},
+			#{idcard},
+			#{picture},
+			#{phone},
+			#{email},
+			#{videoFile},
+			#{depositBank},
+			#{branchBankName},
+			#{bankCard},
+			#{authState},
+			#{authType},
+			#{starttime},
+			#{updatetime},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_auth SET 	
+			user_id = #{userid},
+			name = #{name},
+			idcard = #{idcard},
+			picture = #{picture},
+			phone = #{phone},
+			email = #{email},
+			video_file = #{videoFile},
+			deposit_bank = #{depositBank},
+			branch_bank_name = #{branchBankName},
+			bank_card = #{bankCard},
+			auth_state = #{authState},
+			auth_type = #{authType},
+			starttime = #{starttime},
+			updatetime = #{updatetime},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM mt_auth
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

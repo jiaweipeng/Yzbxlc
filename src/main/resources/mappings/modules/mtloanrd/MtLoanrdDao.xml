@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mtloanrd.dao.MtLoanrdDao">
+    
+	<sql id="mtLoanrdColumns">
+		a.id AS "id",
+		a.batchNo AS "batchNo",
+		a.projectNo AS "projectNo",
+		a.transferType AS "transferType",
+		a.merBillNo AS "merBillNo",
+		a.outipsacctno AS "outipsacctno",
+		a.inipsacctno AS "inipsacctno",
+		a.ipsbillno AS "ipsbillno",
+		a.ipsdotime AS "ipsdotime",
+		a.ipstrdamt AS "ipstrdamt",
+		a.trdstatus AS "trdstatus",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.userid AS "userid",
+		a.pid AS "pid"
+	</sql>
+	
+	<sql id="mtLoanrdJoins">
+	</sql>
+    
+	<select id="get" resultType="MtLoanrd">
+		SELECT 
+			<include refid="mtLoanrdColumns"/>
+		FROM mt_loanrd a
+		<include refid="mtLoanrdJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="sumUserLoanrd" resultType="String">
+		SELECT 
+			sum(a.ipsTrdAmt) as trdAmt
+		FROM mt_loanrd a 
+		<include refid="mtLoanrdJoins"/>
+		<where>
+			AND a.trdstatus = 1
+			<if test="starttime !=null and aborttime !=null">
+				<if test="starttime !='' and aborttime !=''">
+					AND a.ipsDoTime &gt;= #{starttime}
+					AND a.ipsDoTime &lt;= #{aborttime}
+				</if>
+			</if>
+			AND a.userid = #{userid}
+			AND a.transferType = #{type}
+		</where>
+	</select>
+	
+	<select id="findProjectNo" resultType="MtLoanrd">
+		SELECT 
+			a.projectNo AS "projectNo",
+			sum(a.ipstrdamt) AS "ipstrdamt",
+			a.transferType AS "transferType",
+			a.create_date AS "createDate"
+		FROM mt_loanrd a, mt_product b
+		<include refid="mtLoanrdJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND b.title LIKE 
+					<if test="dbName=='mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="transferType != null and transferType != ''">
+				AND a.transferType = #{transferType}
+			</if>
+			AND a.projectNo = b.pid
+		</where>
+		GROUP BY a.projectNo,a.transferType
+		ORDER BY a.update_date DESC
+	</select>
+	
+	<select id="findCount" resultType="Integer">
+		SELECT 
+			COUNT(*)
+		FROM mt_loanrd a
+		<include refid="mtLoanrdJoins"/>
+		<where>
+			a.del_flag = 0
+			AND a.ipsbillno = #{billon}
+		</where>
+	</select>
+	
+	<select id="findList" resultType="MtLoanrd">
+		SELECT 
+			<include refid="mtLoanrdColumns"/>
+		FROM mt_loanrd a, mt_product b
+		<include refid="mtLoanrdJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND b.title LIKE 
+					<if test="dbName=='mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="projectNo != null and projectNo != ''">
+				AND a.projectNo = #{projectNo}
+			</if>
+			<if test="transferType != null and transferType != ''">
+				AND a.transferType = #{transferType}
+			</if>
+			AND a.projectNo = b.pid
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtLoanrd">
+		SELECT 
+			<include refid="mtLoanrdColumns"/>
+		FROM mt_loanrd a
+		<include refid="mtLoanrdJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_loanrd(
+			batchNo,
+			projectNo,
+			transferType,
+			merBillNo,
+			outipsacctno,
+			inipsacctno,
+			ipsbillno,
+			ipsdotime,
+			ipstrdamt,
+			trdstatus,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			userid,
+			pid
+		) VALUES (
+			#{batchNo},
+			#{projectNo},
+			#{transferType},
+			#{merBillNo},
+			#{outipsacctno},
+			#{inipsacctno},
+			#{ipsbillno},
+			#{ipsdotime},
+			#{ipstrdamt},
+			#{trdstatus},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userid},
+			#{pid}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_loanrd SET 
+			batchNo = #{batchNo},
+			projectNo = #{projectNo},
+			transferType = #{transferType},
+			merBillNo = #{merBillNo},
+			outipsacctno = #{outipsacctno},
+			inipsacctno = #{inipsacctno},
+			ipsbillno = #{ipsbillno},
+			ipsdotime = #{ipsdotime},
+			ipstrdamt = #{ipstrdamt},
+			trdstatus = #{trdstatus},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			userid = #{userid},
+			pid = #{pid}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_loanrd SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mtinvest.dao.MtInvestDao">
+    
+	<sql id="mtInvestColumns">
+		a.id AS "id",
+		a.tendtime AS "tendtime",
+		a.mount AS "mount",
+		a.down AS "down",
+		a.product_id AS "productid",
+		a.mt_user_id AS "mtUserId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.invment AS "invment",
+		a.plfment as "plfment",
+		a.merBillNo AS "merBillNo",
+		a.trdStatus AS "trdStatus",
+		a.projectNo AS "projectNo",
+		a.ipsBillNo AS "ipsBillNo",
+		a.ipsAcctNo AS "ipsAcctNo",
+		a.ipsDoTime AS "ipsDoTime",
+		a.ipsTrdAmt AS "ipsTrdAmt",
+		a.rvnueTime AS "rvnueTime"
+	</sql>
+	
+	 <select id="getcountname" resultType="java.lang.String">	
+    	select COUNT(*) as productid  from mt_invest where product_id=#{productid}
+    </select>
+	
+	<select id="get" resultType="MtInvest">
+		SELECT 
+			<include refid="mtInvestColumns"/>
+		FROM mt_invest a  
+	</select>
+	
+	<select id="findIdList" resultType="MtInvest">
+		SELECT 
+			<include refid="mtInvestColumns"/>
+		FROM mt_invest a
+		<where>
+			a.del_flag = 0
+			AND a.product_id=#{productid}
+		</where>
+	</select>
+	
+	<select id="findInvest" resultType="MtInvest">
+		SELECT 
+			<include refid="mtInvestColumns"/>
+		FROM mt_invest a
+		<where>
+			a.del_flag = 0
+			AND a.ipsBillNo=#{freezeId}
+		</where>
+	</select>
+	
+	<select id="findList" resultType="MtInvest">
+		SELECT 
+			<include refid="mtInvestColumns"/>
+		FROM mt_invest a,mt_user u ,mt_product p
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+				<if test="beginTime !=null and beginTime !=''">
+               	 	AND  DATE_FORMAT(a.ipsDoTime,'%Y-%m-%d')<![CDATA[ >=DATE_FORMAT(#{beginTime},'%Y-%m-%d')]]>
+               </if>
+           		<if test="endTime !=null and endTime !=''">
+                	 AND DATE_FORMAT(a.ipsDoTime,'%Y-%m-%d')<![CDATA[ <= DATE_FORMAT(#{endTime},'%Y-%m-%d') ]]>
+             	</if>
+				
+			
+			AND a.product_id=#{productid}
+			
+			AND a.product_id=p.id
+			
+			AND a.mt_user_id = u.id
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtInvest">
+		SELECT 
+			<include refid="mtInvestColumns"/>
+		FROM mt_invest a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>	
+		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_invest(
+			tendtime,
+			mount,
+			down,
+			mt_user_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			invment,
+			plfment,
+			rvnueTime
+		) VALUES (
+			#{tendtime},
+			#{mount},
+			#{down},
+			#{mtUserId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{invment},
+			#{plfment},
+			#{rvnueTime}
+		)
+	</insert>
+	
+	<update id="updateInvment">
+		UPDATE mt_invest SET invment=#{0}
+		WHERE projectNo=#{1}
+	</update>
+	
+	<update id="update">
+		UPDATE mt_invest SET 	
+			tendtime = #{tendtime},
+			mount = #{mount},
+			down = #{down},
+			mt_user_id = #{mtUserId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			invment=#{invment},
+			rvnueTime=#{rvnueTime},
+			WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_invest SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

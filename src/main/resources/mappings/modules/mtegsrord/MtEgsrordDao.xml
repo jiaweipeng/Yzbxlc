@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mtegsrord.dao.MtEgsrordDao">
+    
+	<sql id="mtEgsrordColumns">
+		a.id AS "id",
+		a.borrower AS "borrower",
+		a.numpds AS "numpds",
+		a.total AS "total",
+		a.receivable AS "receivable",
+		a.interest AS "interest",
+		a.type AS "type",
+		a.mt_user_id AS "mtUserId",
+		a.mt_invest_id AS "mtInvestId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.recenttime AS "recenttime",
+		a.actualtime AS "actualtime",
+		a.projectNo AS "projectNo",
+		a.remarks AS "remarks"
+	</sql>
+	
+	<sql id="mtEgsrordJoins">
+	</sql>
+    
+	<select id="get" resultType="MtEgsrord">
+		SELECT 
+			<include refid="mtEgsrordColumns"/>
+		FROM mt_egsrord a
+		<include refid="mtEgsrordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="sumUserReceivable" resultType="String">
+		SELECT 
+			sum(a.receivable) as trdAmt
+		FROM mt_egsrord a 
+		<include refid="mtEgsrordJoins"/>
+		<where>
+			a.type = 1
+			<!-- AND a.update_date like #{0} -->
+			<if test="starttime !=null and aborttime !=null">
+				<if test="starttime !='' and aborttime !=''">
+					AND a.actualtime &gt;= #{starttime}
+					AND a.actualtime &lt;= #{aborttime}
+				</if>
+			</if>
+			AND a.mt_user_id = #{userid}
+		</where>
+	</select>
+	
+	<select id="sumUserInterest" resultType="String">
+		SELECT 
+			sum(a.interest) as trdAmt
+		FROM mt_egsrord a 
+		<include refid="mtEgsrordJoins"/>
+		<where>
+			a.type = 1
+			<if test="starttime !=null and aborttime !=null">
+				<if test="starttime !='' and aborttime !=''">
+					AND a.actualtime &gt;= #{starttime}
+					AND a.actualtime &lt;= #{aborttime}
+				</if>
+			</if>
+			<!-- AND a.update_date like #{time} -->
+			AND a.mt_user_id = #{userid}
+		</where>
+	</select>
+	
+	<select id="findList" resultType="MtEgsrord">
+		SELECT 
+			<include refid="mtEgsrordColumns"/>
+		FROM mt_egsrord a
+		<include refid="mtEgsrordJoins"/>
+		<where>
+			a.mt_invest_id = #{id}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtEgsrord">
+		SELECT 
+			<include refid="mtEgsrordColumns"/>
+		FROM mt_egsrord a
+		<include refid="mtEgsrordJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_egsrord(
+			borrower,
+			numpds,
+			total,
+			receivable,
+			interest,
+			type,
+			mt_user_id,
+			mt_invest_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			recenttime,
+			actualtime,
+			projectNo,
+			remarks
+		) VALUES (
+			#{borrower},
+			#{numpds},
+			#{total},
+			#{receivable},
+			#{interest},
+			#{type},
+			#{mtUserId},
+			#{mtInvestId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{recenttime},
+			#{actualtime},
+			#{projectNo},
+			#{remarks}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_egsrord SET 	
+			borrower = #{borrower},
+			numpds = #{numpds},
+			total = #{total},
+			receivable = #{receivable},
+			interest = #{interest},
+			type = #{type},
+			mt_user_id = #{mtUserId},
+			mt_invest_id = #{mtInvestId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			recenttime=#{recenttime},
+			actualtime=#{actualtime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM mt_egsrord
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

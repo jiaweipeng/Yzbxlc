@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.product.dao.MtProductDao">
+    
+	<sql id="mtProductColumns">
+		a.id AS "id",
+		a.pid AS "pid",
+		a.title AS "title",
+		a.hopepercent AS "hopepercent",
+		a.starttime AS "starttime",
+		a.endtime AS "endtime",
+		a.userfor AS "userfor",
+		a.balancetype AS "balancetype",
+		a.cycle AS "cycle",
+		a.unit AS "unit",
+		a.risk AS "risk",
+		a.riskcontrol AS "riskcontrol",
+		a.displaydays AS "displaydays",
+		a.lowmoney AS "lowmoney",
+		a.highmoney AS "highmoney",
+		a.planmoney AS "planmoney",
+		a.duetime AS "duetime",
+		a.controldemo AS "controldemo",
+		a.planinfo AS "planinfo",
+		a.recommend AS "recommend",
+		a.recommendidx AS "recommendidx",
+		a.currentpercent AS "currentpercent",
+		a.status AS "status",
+		a.managecost AS "managecost",
+		a.investcost AS "investcost",
+		a.type AS "type",
+		a.userid AS "userid",
+		a.rewardtype AS "rewardtype",
+		a.rewardamout AS "rewardamout",
+		a.useragent AS "useragent",
+		a.agreementid AS "agreementid",
+		a.cashdeposit AS "cashdeposit",
+		a.guarantee AS "guarantee",
+		a.pawnimg AS "pawnimg",
+		a.contact AS "contact",
+		a.contact_tel AS "contactTel",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.ivable AS "ivable",
+		a.ivalready AS "ivalready",
+		a.merBillNo AS "merBillNo",
+		a.ipsBillNo AS "ipsBillNo",
+		a.ipsDoTime AS "ipsDoTime",
+		a.carBrand AS "carBrand",
+	 	a.carModel AS "carModel",
+		a.carColor AS "carColor",
+		a.carFuel AS "carFuel",
+		a.carDischarge AS "carDischarge",
+		a.carKilometer AS "carKilometer",
+		a.carRegtime AS "carRegtime",
+		a.carBuytime AS "carBuytime",
+		a.carBuyPrice AS "carBuyPrice",
+		a.carEstimate AS "carEstimate",
+		a.bizFlow AS "bizFlow",
+		a.tradeDate AS "tradeDate",
+		a.tradeTime AS "tradeTime",
+		a.subjectNo AS "subjectNo"
+	</sql>
+	
+	<sql id="mtProductJoins">
+	</sql>
+    
+	<select id="get" resultType="MtProduct">
+		SELECT 
+			<include refid="mtProductColumns"/>
+		FROM mt_product a
+		<include refid="mtProductJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findListByagent" resultType="MtProduct">
+		SELECT 
+			<include refid="mtProductColumns"/>
+		FROM mt_product a
+		<include refid="mtProductJoins"/>
+		<where>
+			<if test="useragent != null and useragent != ''">
+				AND a.useragent = #{useragent}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="getProductByGrade" resultType="MtProduct">
+		SELECT 
+			<include refid="mtProductColumns"/>
+		FROM mt_product a
+		<include refid="mtProductJoins"/>
+		WHERE a.pid = #{id}
+	</select>
+	
+	<select id="findStatusList" resultType="MtProduct">
+		SELECT 
+			<include refid="mtProductColumns"/>
+		FROM mt_product a
+		<include refid="mtProductJoins"/>
+		<where>
+			a.del_flag = 0
+			AND a.status = #{0}
+			OR a.status = #{1}
+		</where>		
+	</select>
+
+	<select id="findList" resultType="MtProduct">
+		SELECT 
+			<include refid="mtProductColumns"/>
+		FROM mt_product a
+		<include refid="mtProductJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="starttime !=null and starttime !=''">
+                <![CDATA[
+               	 	 AND a.starttime >= #{starttime}
+                ]]>
+            </if>
+            <if test="endtime !=null and endtime !=''">
+                <![CDATA[
+                	 AND a.endtime <= #{endtime} 
+                ]]>
+            </if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="status != null and status != '' or status == 0">
+				<choose>
+					<when test="status == 10">
+						AND a.status in (4,10)
+					</when>
+					<otherwise>
+						AND a.status = #{status}
+					</otherwise>
+				</choose>
+			</if>			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtProduct">
+		SELECT 
+			<include refid="mtProductColumns"/>
+		FROM mt_product a
+		<include refid="mtProductJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_product(
+			pid,
+			title,
+			hopepercent,
+			starttime,
+			endtime,
+			userfor,
+			balancetype,
+			cycle,
+			unit,
+			risk,
+			riskcontrol,
+			displaydays,
+			lowmoney,
+			highmoney,
+			planmoney,
+			duetime,
+			controldemo,
+			planinfo,
+			recommend,
+			recommendidx,
+			currentpercent,
+			status,
+			managecost,
+			investcost,
+			type,
+			userid,
+			rewardtype,
+			rewardamout,
+			useragent,
+			agreementid,
+			cashdeposit,
+			guarantee,
+			pawnimg,
+			contact,
+			contact_tel,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			ivable,
+			ivalready,
+			merBillNo,
+			ipsBillNo,
+			ipsDoTime,
+			carBrand,
+	 		carModel,
+			carColor,
+			carFuel,
+			carDischarge,
+			carKilometer,
+			carRegtime,
+			carBuytime,
+			carBuyPrice,
+			carEstimate,
+			bizFlow,
+			tradeDate,
+			tradeTime,
+			subjectNo
+		) VALUES (
+			#{pid},
+			#{title},
+			#{hopepercent},
+			#{starttime},
+			#{endtime},
+			#{userfor},
+			#{balancetype},
+			#{cycle},
+			#{unit},
+			#{risk},
+			#{riskcontrol},
+			#{displaydays},
+			#{lowmoney},
+			#{highmoney},
+			#{planmoney},
+			#{duetime},
+			#{controldemo},
+			#{planinfo},
+			#{recommend},
+			#{recommendidx},
+			#{currentpercent},
+			#{status},
+			#{managecost},
+			#{investcost},
+			#{type},
+			#{userid},
+			#{rewardtype},
+			#{rewardamout},
+			#{useragent},
+			#{agreementid},
+			#{cashdeposit},
+			#{guarantee},
+			#{pawnimg},
+			#{contact},
+			#{contact_tel},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ivable},
+			#{ivalready},
+			#{merBillNo},
+			#{ipsBillNo},
+			#{ipsDoTime},
+			#{carBrand},
+	 		#{carModel},
+			#{carColor},
+			#{carFuel},
+			#{carDischarge},
+			#{carKilometer},
+			#{carRegtime},
+			#{carBuytime},
+			#{carBuyPrice},
+			#{carEstimate},
+			#{bizFlow},
+			#{tradeDate},
+			#{tradeTime},
+			#{subjectNo}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_product SET 	
+			pid = #{pid},
+			title = #{title},
+			hopepercent = #{hopepercent},
+			starttime = #{starttime},
+			endtime = #{endtime},
+			userfor = #{userfor},
+			balancetype = #{balancetype},
+			cycle = #{cycle},
+			unit = #{unit},
+			risk = #{risk},
+			riskcontrol = #{riskcontrol},
+			displaydays = #{displaydays},
+			lowmoney = #{lowmoney},
+			highmoney = #{highmoney},
+			planmoney = #{planmoney},
+			duetime = #{duetime},
+			controldemo = #{controldemo},
+			planinfo = #{planinfo},
+			recommend = #{recommend},
+			recommendidx = #{recommendidx},
+			currentpercent = #{currentpercent},
+			status = #{status},
+			managecost = #{managecost},
+			investcost = #{investcost},
+			type = #{type},
+			userid = #{userid},
+			rewardtype = #{rewardtype},
+			rewardamout = #{rewardamout},
+			useragent = #{useragent},
+			agreementid = #{agreementid},
+			cashdeposit = #{cashdeposit},
+			guarantee = #{guarantee},
+			pawnimg = #{pawnimg},
+			contact = #{contact},
+			contact_tel = #{contactTel},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			ivable = #{ivable},
+			ivalready = #{ivalready},
+			merBillNo = #{merBillNo},
+			ipsBillNo = #{ipsBillNo},
+			ipsDoTime = #{ipsDoTime},
+			carBrand = #{carBrand},
+	 		carModel = #{carModel},
+			carColor = #{carColor},
+			carFuel = #{carFuel},
+			carDischarge = #{carDischarge},
+			carKilometer = #{carKilometer},
+			carRegtime = #{carRegtime},
+			carBuytime = #{carBuytime},
+			carBuyPrice = #{carBuyPrice},
+			carEstimate = #{carEstimate},
+			bizFlow = #{bizFlow},
+			tradeDate = #{tradeDate},
+			tradeTime = #{tradeTime},
+			subjectNo = #{subjectNo}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_product SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

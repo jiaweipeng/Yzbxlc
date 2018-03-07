@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.lunbo.dao.MtLunboDao">
+    
+	<sql id="mtLunboColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.img AS "img",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.url AS "url",
+		a.img_idx AS "imgIdx"
+	</sql>
+	
+	<sql id="mtLunboJoins">
+	</sql>
+    
+	<select id="get" resultType="MtLunbo">
+		SELECT 
+			<include refid="mtLunboColumns"/>
+		FROM mt_lunbo a
+		<include refid="mtLunboJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MtLunbo">
+		SELECT 
+			<include refid="mtLunboColumns"/>
+		FROM mt_lunbo a
+		<include refid="mtLunboJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtLunbo">
+		SELECT 
+			<include refid="mtLunboColumns"/>
+		FROM mt_lunbo a
+		<include refid="mtLunboJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_lunbo(
+			title,
+			img,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			url,
+			img_idx
+		) VALUES (
+			#{title},
+			#{img},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{url},
+			#{imgIdx}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_lunbo SET 	
+			title = #{title},
+			img = #{img},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			url = #{url},
+			img_idx = #{imgIdx}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_lunbo SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

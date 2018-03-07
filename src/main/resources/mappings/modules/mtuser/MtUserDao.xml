@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mtuser.dao.MtUserDao">
+    
+	<sql id="mtUserColumns">
+		a.id AS "id",
+		a.user_nick_name AS "userNickName",
+		a.user_mail AS "userMail",
+		a.user_password AS "userPassword",
+		a.user_pay_password AS "userPayPassword",
+		a.user_agent_id AS "userAgentId",
+		a.user_real_name AS "userRealName",
+		a.user_head_img AS "userHeadImg",
+		a.user_status AS "userStatus",
+		a.is_auth AS "isAuth",
+		a.is_bind_bank AS "isBindBank",
+		a.is_bind_tel AS "isBindTel",
+		a.is_bind_mail AS "isBindMail",
+		a.user_last_login_time AS "userLastLoginTime",
+		a.user_ip AS "userIp",
+		a.user_browser AS "userBrowser",
+		a.user_system AS "userSystem",
+		a.user_brith AS "userBrith",
+		a.user_sex AS "userSex",
+		a.user_sos_name AS "userSosName",
+		a.user_sos_tel AS "userSosTel",
+		a.user_type AS "userType",
+		a.user_id_number AS "userIdNumber",
+		a.user_tel AS "userTel",
+		a.user_account AS "userAccount",
+		a.is_video_auth AS "isVideoAuth",
+		a.is_scene_auth AS "isSceneAuth",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.is_in_borrowing AS "isInBorrowing",
+		a.edu_background AS "eduBackground",
+		a.marital_status AS "maritalStatus",
+		a.job_description AS "jobDescription",
+		a.month_income AS "monthIncome",
+		a.census_register_addr AS "censusRegisterAddr",
+		a.current_address AS "currentAddress",
+		a.ipsDoTime AS "ipsDoTime",
+		a.ipsAcctNo AS "ipsAcctNo",
+		a.ipsBillNo AS "ipsBillNo",
+		a.freezeamout AS "freezeamout"
+	</sql>
+	
+	<sql id="mtUserJoins">
+	</sql>
+    
+	<select id="get" resultType="MtUser">
+		SELECT 
+			<include refid="mtUserColumns"/>
+		FROM mt_user a
+		<include refid="mtUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+		
+	<select id="findUser" resultType="MtUser">
+		SELECT 
+			<include refid="mtUserColumns"/>
+		FROM mt_user a
+		<include refid="mtUserJoins"/>
+		WHERE a.ipsAcctNo = #{ipsAcctNo}
+	</select>
+	
+	<select id="findList" resultType="MtUser">
+		SELECT 
+			<include refid="mtUserColumns"/>
+		FROM mt_user a
+		<include refid="mtUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			
+			<if test="beginTime !=null and beginTime !=''">
+               	 	AND  DATE_FORMAT(a.create_date,'%Y-%m-%d')<![CDATA[ >=DATE_FORMAT(#{beginTime},'%Y-%m-%d')]]>
+            </if>
+            
+            
+            <if test="endTime !=null and endTime !=''">
+                	AND DATE_FORMAT(a.create_date,'%Y-%m-%d')<![CDATA[ <= DATE_FORMAT(#{endTime},'%Y-%m-%d') ]]>
+             </if>
+             
+             
+			<if test="userTel != null and userTel != ''">
+				AND a.user_tel  LIKE 
+				   <if test="dbName == 'mysql'">concat('%',#{userTel},'%')</if>
+			</if>
+			<if test="userRealName != null and userRealName != ''">
+				AND a.user_real_name LIKE
+					<if test="dbName=='mysql'">concat('%',#{userRealName},'%')</if>
+			</if>
+			
+			
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.user_account DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="agentList" resultType="MtUser">
+		SELECT 
+			<include refid="mtUserColumns"/>
+		FROM mt_user as a where a.user_status=3
+	</select>
+
+	<select id="findAllList" resultType="MtUser">
+		SELECT 
+			<include refid="mtUserColumns"/>
+		FROM mt_user a
+		<include refid="mtUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_user(
+			user_nick_name,
+			user_mail,
+			user_password,
+			user_pay_password,
+			user_agent_id,
+			user_real_name,
+			user_head_img,
+			user_last_login_time,
+			user_ip,
+			user_browser,
+			user_system,
+			user_brith,
+			user_sex,
+			user_sos_name,
+			user_sos_tel,
+			user_type,
+			user_id_number,
+			user_tel,
+			user_account,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			is_in_borrowing,
+			edu_background,
+			marital_status,
+			job_description,
+			month_income,
+			census_register_addr,
+			current_address,
+			ipsDoTime,
+			ipsAcctNo,
+			ipsBillNo,
+			freezeamout
+		) VALUES (
+			#{userNickName},
+			#{userMail},
+			#{userPassword},
+			#{userPayPassword},
+			#{userAgentId},
+			#{userRealName},
+			#{userHeadImg},
+			#{userLastLoginTime},
+			#{userIp},
+			#{userBrowser},
+			#{userSystem},
+			#{userBrith},
+			#{userSex},
+			#{userSosName},
+			#{userSosTel},
+			#{userType},
+			#{userIdNumber},
+			#{userTel},
+			#{userAccount},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{isInBorrowing},
+			#{eduBackground},
+			#{maritalStatus},
+			#{jobDescription},
+			#{monthIncome},
+			#{censusRegisterAddr},
+			#{currentAddress},
+			#{ipsDoTime},
+			#{ipsAcctNo},
+			#{ipsBillNo},
+			#{freezeamout}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_user SET 	
+			user_nick_name = #{userNickName},
+			user_mail = #{userMail},
+			user_password = #{userPassword},
+			user_pay_password = #{userPayPassword},
+			user_agent_id = #{userAgentId},
+			user_real_name = #{userRealName},
+			user_head_img = #{userHeadImg},
+			user_status = #{userStatus},
+			is_auth = #{isAuth},
+			is_bind_bank = #{isBindBank},
+			is_bind_tel = #{isBindTel},
+			is_bind_mail = #{isBindMail},
+			user_last_login_time = #{userLastLoginTime},
+			user_ip = #{userIp},
+			user_browser = #{userBrowser},
+			user_system = #{userSystem},
+			user_brith = #{userBrith},
+			user_sex = #{userSex},
+			user_sos_name = #{userSosName},
+			user_sos_tel = #{userSosTel},
+			user_type = #{userType},
+			user_id_number = #{userIdNumber},
+			user_tel = #{userTel},
+			user_account = #{userAccount},
+			is_video_auth = #{isVideoAuth},
+			is_scene_auth = #{isSceneAuth},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			is_in_borrowing = #{isInBorrowing},
+			edu_background = #{eduBackground},
+			marital_status = #{maritalStatus},
+			job_description = #{jobDescription},
+			month_income = #{monthIncome},
+			census_register_addr = #{censusRegisterAddr},
+			current_address = #{currentAddress},
+			ipsDoTime = #{ipsDoTime},
+			ipsAcctNo = #{ipsAcctNo},
+			ipsBillNo = #{ipsBillNo},
+			freezeamout = #{freezeamout}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_user SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

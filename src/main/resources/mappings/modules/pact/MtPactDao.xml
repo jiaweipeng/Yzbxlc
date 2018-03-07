@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.pact.dao.MtPactDao">
+    
+	<sql id="mtPactColumns">
+		a.id AS "id",
+		a.pact_id AS "pactId",
+		a.pact_type AS "pactType",
+		a.pact_state AS "pactState",
+		a.pact_sign_time AS "pactSignTime",
+		a.pid AS "pid",
+		a.invest_id AS "investId",
+		a.borrow_id AS "borrowId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.pact_site AS "pactSite"
+	</sql>
+	
+	<sql id="mtPactJoins">
+	</sql>
+    
+	<select id="get" resultType="MtPact">
+		SELECT 
+			<include refid="mtPactColumns"/>
+		FROM mt_pact a
+		<include refid="mtPactJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findPact" resultType="MtPact">
+		SELECT 
+			<include refid="mtPactColumns"/>
+		FROM mt_pact a
+		<include refid="mtPactJoins"/>
+		WHERE a.pid = #{pid}
+	</select>
+	
+	<select id="findList" resultType="MtPact">
+		SELECT 
+			<include refid="mtPactColumns"/>
+		FROM mt_pact a, mt_user u
+		<include refid="mtPactJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pactId != null and pactId != ''">
+				AND a.pact_id LIKE 
+					<if test="dbName == 'oracle'">'%'||#{pactId}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{pactId}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{pactId},'%')</if>
+			</if>
+			<if test="pid != null and pid != ''">
+				AND a.pid LIKE 
+					<if test="dbName == 'oracle'">'%'||#{pid}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{pid}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{pid},'%')</if>
+			</if>
+			<!-- 投资人姓名查询 -->
+			<if test="investId != null and investId != ''">
+				AND a.invest_id LIKE 
+					<if test="dbName == 'oracle'">'%'||#{investId}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{investId}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{investId},'%')</if>
+			</if>
+				<!-- 获取数据库数据 -->
+				<!--  -->
+			<if test="pactType != null and pactType != ''">
+				AND a.pact_type = #{pactType}
+			</if>
+			<if test="userRealName != null and userRealName != ''">
+				AND u.user_real_name = #{userRealName}
+			</if>	
+			AND a.invest_id = u.id
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MtPact">
+		SELECT 
+			<include refid="mtPactColumns"/>
+		FROM mt_pact a
+		<include refid="mtPactJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mt_pact(
+			pact_id,
+			pact_type,
+			pact_state,
+			pact_sign_time,
+			pid,
+			invest_id,
+			borrow_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			pact_site
+		) VALUES (
+			#{pactId},
+			#{pactType},
+			#{pactState},
+			#{pactSignTime},
+			#{pid},
+			#{investId},
+			#{borrowId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{pactSite}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mt_pact SET 	
+			pact_id = #{pactId},
+			pact_type = #{pactType},
+			pact_state = #{pactState},
+			pact_sign_time = #{pactSignTime},
+			pid = #{pid},
+			invest_id = #{investId},
+			borrow_id = #{borrowId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			pact_site = #{pactSite}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mt_pact SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
